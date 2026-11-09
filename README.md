@@ -4,7 +4,7 @@ Análise da carteira de vidas de uma operadora de planos de saúde, **do SQL ao 
 
 > ⚠️ **Todos os dados deste repositório são fictícios.** A operadora "Vértice Saúde", as empresas, os planos e os beneficiários foram gerados para demonstração, mantendo a estrutura e os padrões de uma base real. Nenhum dado real de pessoas ou empresas é exibido.
 
-🔗 **Dashboard:** _cole aqui o link do Netlify_ · 📓 **Notebook:** [`analises/python/analise_carteira.ipynb`](analises/python/analise_carteira.ipynb)
+🔗 **Dashboard:** (https://dashboard-beneficiarios.netlify.app/) · 📓 **Notebook:** [`analises/python/analise_carteira.ipynb`](analises/python/analise_carteira.ipynb)
 
 ![Prévia do dashboard](docs/preview.png)
 
