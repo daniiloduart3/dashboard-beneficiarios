@@ -74,4 +74,4 @@ npm run dev
 ## Autor
 
 **Danilo Duarte**: economista com experiência em saúde suplementar, migrando para a área de dados com foco em análise e estratégia.
-[LinkedIn](https://www.linkedin.com/in/SEU-PERFIL) · [GitHub](https://github.com/daniiloduart3)
+[LinkedIn](www.linkedin.com/in/danilo-duarte-b2040b186) · [GitHub](https://github.com/daniiloduart3)
