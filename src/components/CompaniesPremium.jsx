@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from "react";
+import { obterDataReferencia } from "../utils/regrasNegocio";
 import { empresaValidaParaAnalise } from "../utils/dashboard";
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -86,7 +87,7 @@ function CompaniesPremium({ dashboard }) {
   const [search, setSearch] = useState("");
 
   const data = useMemo(() => {
-    const now = new Date();
+    const now = obterDataReferencia();
     const months = Array.from({ length: 6 }, (_, reverseIndex) => {
       const offset = 5 - reverseIndex;
       return new Date(now.getFullYear(), now.getMonth() - offset, 1);

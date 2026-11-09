@@ -1,0 +1,36 @@
+motivo_original;motivo_descricao;motivo_grupo
+INADIMPLENCIA;Inadimplência;Financeiro
+DIFICULDADE FINANCEI;Dificuldade financeira;Financeiro
+CANCELAMENTO  DIFICU;Dificuldade financeira;Financeiro
+CANCELAMENTO DA COBR;Cancelamento da cobrança;Financeiro
+ROMPIMENTO DO CONTRA;Rompimento do contrato;Rescisão do contrato
+A PEDIDO DA EMPRESA;A pedido da empresa contratante;Rescisão do contrato
+DESLIGAMENTO DA EMPR;Desligamento da empresa (demissão);Rescisão do contrato
+DAP - DEMITIDOS E AP;Demitidos e aposentados;Rescisão do contrato
+CNPJ BAIXADO NA RECE;CNPJ baixado na Receita;Rescisão do contrato
+NUMERO DE VIDAS REDU;Redução do número de vidas;Rescisão do contrato
+FINALIZAÇÃO DA MANUT;Fim do período de manutenção;Rescisão do contrato
+CANCELAMENTO INSATIS;Insatisfação;Insatisfação
+INSATISFACAO  - CANA;Insatisfação;Insatisfação
+CANCELAMENTO INDISPO;Indisponibilidade de rede/serviço;Insatisfação
+CANCELAMENTO NAO UTI;Não utilização do plano;Não utilização
+DESISTENCIA DENTRO D;Desistência no prazo;Desistência
+DESISTÊNCIA-NÃO ACEI;Desistência (não aceite);Desistência
+PORTABILIDADE;Portabilidade para outra operadora;Portabilidade
+MUDANÇA DE ENDEREÇO;Mudança de endereço;Mudança de região
+MUDANCA PARA REGIAO;Mudança para região sem cobertura;Mudança de região
+MUDOU PARA OUTRO PAÍ;Mudança para outro país;Mudança de região
+CANCELAMENTO FALECIM;Falecimento;Falecimento
+CANCELAMENTO  ¿ FALE;Falecimento;Falecimento
+FALECIDO;Falecimento;Falecimento
+MIGRADO;Migração de contrato;Migração
+MIGRACAO DE CONTRATO;Migração de contrato;Migração
+MIGRAÇÃO PF PARA PJ;Migração de PF para PJ;Migração
+MUDANÇA DE PLANO PJ;Mudança de plano;Migração
+ALTERAÇAO DO PLANO D;Alteração de plano;Migração
+GERACAO INDEVIDA;Cadastro gerado indevidamente;Erro cadastral
+CADASTRO DUPLICADO;Cadastro duplicado;Erro cadastral
+ALTERACAO DE DATA DE;Alteração de data;Erro cadastral
+INEGEBILIDADE;Inelegibilidade;Elegibilidade
+COMPLETOU MAIORIDADE;Perda de elegibilidade (maioridade);Elegibilidade
+OUTROS MOTIVOS;Outros motivos;Outros

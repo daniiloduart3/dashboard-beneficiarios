@@ -1,6 +1,7 @@
 import { memo, useMemo } from "react";
 import { getAnalysisContext, getLocationValue } from "../utils/analysisContext";
 import { empresaValidaParaAnalise } from "../utils/dashboard";
+import { faixaEtariaANS, padronizarMotivo } from "../utils/regrasNegocio";
 
 function parseDate(value) {
   if (!value) return null;
@@ -16,18 +17,12 @@ function getCancellationDate(item) {
   return parseDate(item?.["Data de cancelamento"] ?? item?.["Data de Cancelamento"]);
 }
 function getReason(item) {
-  return String(item?.["Motivo do cancelamento"] ?? item?.["Motivo de cancelamento"] ?? "Não informado").trim() || "Não informado";
+  return padronizarMotivo(item?.["Motivo do cancelamento"] ?? item?.["Motivo de cancelamento"]).descricao;
 }
 function getCompany(item) { return String(item?.Empresa ?? "Não informado").trim() || "Não informado"; }
 function getAgeBand(item) {
-  const age = Number(String(item?.Idade ?? "").replace(",", "."));
-  if (!Number.isFinite(age)) return "Não informada";
-  if (age <= 17) return "0–17 anos";
-  if (age <= 29) return "18–29 anos";
-  if (age <= 39) return "30–39 anos";
-  if (age <= 49) return "40–49 anos";
-  if (age <= 59) return "50–59 anos";
-  return "60 anos ou mais";
+  const faixa = faixaEtariaANS(item?.Idade);
+  return faixa === "Não informado" ? "Não informada" : `${faixa} anos`;
 }
 function topBy(records, getter) {
   const counts = new Map();

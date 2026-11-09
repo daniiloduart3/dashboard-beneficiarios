@@ -12,6 +12,11 @@ import {
   normalizarNomeArquivo,
   protegerValorCsv,
 } from "../utils/dashboard";
+import {
+  carregarDataReferencia,
+  obterDataReferencia,
+  padronizarMotivo,
+} from "../utils/regrasNegocio";
 
 
 const CACHE_DATAS = new Map();
@@ -161,6 +166,10 @@ export default function useDashboard() {
         setCarregando(true);
         setErro("");
 
+        // A data de referência (extração da base) precisa estar definida
+        // antes dos cálculos de carteira ativa.
+        await carregarDataReferencia();
+
         const resposta = await fetch(
           "/beneficiarios-publico.csv"
         );
@@ -203,7 +212,7 @@ export default function useDashboard() {
 
         setTodosBeneficiarios(dados);
 
-        const hoje = new Date();
+        const hoje = obterDataReferencia();
         hoje.setHours(23, 59, 59, 999);
 
         // A mesma regra de carteira atual é reutilizada em todo o dashboard.
@@ -480,7 +489,7 @@ export default function useDashboard() {
     const cancelamentosPorMes = new Map();
     let menorData = null;
 
-    const hoje = new Date();
+    const hoje = obterDataReferencia();
     hoje.setHours(23, 59, 59, 999);
 
     const chaveMes = (data) =>
@@ -670,7 +679,7 @@ export default function useDashboard() {
     const cancelamentosPorMes = new Map();
     let menorData = null;
 
-    const hoje = new Date();
+    const hoje = obterDataReferencia();
     hoje.setHours(23, 59, 59, 999);
 
     const chaveMes = (data) =>
@@ -986,7 +995,7 @@ export default function useDashboard() {
           beneficiario["Motivo de cancelamento"] ||
           ""
       ).trim();
-      const motivo = motivoBruto || "Não informado";
+      const motivo = padronizarMotivo(motivoBruto).descricao;
 
       contagem.set(motivo, (contagem.get(motivo) || 0) + 1);
     });

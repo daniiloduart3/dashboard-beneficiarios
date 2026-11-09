@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
 import { getAnalysisContext, getLocationValue } from "../utils/analysisContext";
+import { faixaEtariaANS } from "../utils/regrasNegocio";
 
 function getAge(item) {
   const age = Number(String(item?.Idade ?? "").replace(",", "."));
@@ -12,13 +13,7 @@ function getSex(item) {
   return "Não informado";
 }
 function getBand(age) {
-  if (age === null) return "Não informada";
-  if (age <= 17) return "0–17 anos";
-  if (age <= 29) return "18–29 anos";
-  if (age <= 39) return "30–39 anos";
-  if (age <= 49) return "40–49 anos";
-  if (age <= 59) return "50–59 anos";
-  return "60 anos ou mais";
+  return age === null ? "Não informada" : `${faixaEtariaANS(age)} anos`;
 }
 function pct(value) { return Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
 function Metric({ label, value, detail, tone = "neutral" }) { return <article className={`intelligence-kpi tone-${tone}`}><span>{label}</span><strong>{value}</strong><small>{detail}</small></article>; }

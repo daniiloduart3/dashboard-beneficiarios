@@ -5,6 +5,7 @@ const ITENS = [
   { id: "geografia", icone: "◎", titulo: "Geografia", descricao: "Estados e municípios" },
   { id: "crescimento", icone: "↗", titulo: "Crescimento", descricao: "Evolução e movimentações" },
   { id: "cancelamentos", icone: "↘", titulo: "Cancelamentos", descricao: "Perdas e motivos" },
+  { id: "retencao", icone: "⟲", titulo: "Retenção", descricao: "Churn, safras e permanência" },
   { id: "demografia", icone: "◉", titulo: "Demografia", descricao: "Perfil dos beneficiários" },
   { id: "empresas", icone: "▦", titulo: "Empresas", descricao: "Concentração da carteira" },
 ];

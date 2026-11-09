@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { faixaEtariaANS, obterDataReferencia } from "../utils/regrasNegocio";
 import { echarts } from "../utils/echarts";
 import { empresaValidaParaAnalise } from "../utils/dashboard";
 import { POPULACAO_MUNICIPIOS_IBGE_2025 } from "../data/populacaoMunicipiosIBGE2025";
@@ -52,16 +53,7 @@ function converterData(dataTexto) {
   return data;
 }
 
-function identificarFaixaEtaria(idadeTexto) {
-  const idade = Number(idadeTexto);
-  if (idadeTexto === "" || !Number.isFinite(idade) || idade < 0 || idade > 120) return "Não informado";
-  if (idade <= 17) return "0 a 17";
-  if (idade <= 29) return "18 a 29";
-  if (idade <= 39) return "30 a 39";
-  if (idade <= 49) return "40 a 49";
-  if (idade <= 59) return "50 a 59";
-  return "60 ou mais";
-}
+const identificarFaixaEtaria = faixaEtariaANS;
 
 function identificarTipoCadastro(empresaTexto) {
   const empresa = String(empresaTexto ?? "").trim();
@@ -1070,7 +1062,8 @@ export default function BrazilMap({
           Number.POSITIVE_INFINITY
         ))
       : null;
-    const hoje = new Date();
+    // Compara com a data de extração da base, não com a data de hoje.
+    const hoje = obterDataReferencia();
     hoje.setHours(0, 0, 0, 0);
     const idadeBaseDias = dataMaisRecente
       ? Math.max(0, Math.floor((hoje - dataMaisRecente) / 86400000))

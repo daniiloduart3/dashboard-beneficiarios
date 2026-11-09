@@ -11,6 +11,7 @@ const PAGINAS = {
   executivo: lazy(() => import("../pages/ExecutivePage")),
   crescimento: lazy(() => import("../pages/GrowthPage")),
   cancelamentos: lazy(() => import("../pages/CancellationsPage")),
+  retencao: lazy(() => import("../pages/RetentionPage")),
   empresas: lazy(() => import("../pages/CompaniesPage")),
   geografia: lazy(() => import("../pages/GeographyPage")),
   demografia: lazy(() => import("../pages/DemographicsPage")),
@@ -53,7 +54,8 @@ export default function DashboardView({ dashboard }) {
     totalBeneficiariosCrescimento = 0,
   } = dashboard;
   const PaginaAtiva = PAGINAS[paginaAtiva] || PAGINAS.executivo;
-  const paginaIgnoraPeriodo = paginaAtiva === "crescimento";
+  // Crescimento e Retenção analisam a série histórica completa.
+  const paginaIgnoraPeriodo = paginaAtiva === "crescimento" || paginaAtiva === "retencao";
   const totalPaginaAtiva = paginaIgnoraPeriodo
     ? totalBeneficiariosCrescimento
     : totalBeneficiarios;

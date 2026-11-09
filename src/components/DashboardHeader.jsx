@@ -1,28 +1,7 @@
 import { useEffect, useState } from "react";
+import { DATA_REFERENCIA_PADRAO } from "../utils/regrasNegocio";
 
-const DATA_EXTRACAO_PADRAO = "2026-07-20";
-
-function calcularStatusAtualizacao(dataIso) {
-  const [ano, mes, dia] = dataIso.split("-").map(Number);
-  const dataBase = new Date(ano, mes - 1, dia);
-  const hoje = new Date();
-
-  dataBase.setHours(0, 0, 0, 0);
-  hoje.setHours(0, 0, 0, 0);
-
-  const diferencaMs = hoje.getTime() - dataBase.getTime();
-  const dias = Math.max(0, Math.floor(diferencaMs / 86400000));
-
-  if (dias <= 7) {
-    return { dias, nivel: "verde" };
-  }
-
-  if (dias <= 10) {
-    return { dias, nivel: "amarelo" };
-  }
-
-  return { dias, nivel: "vermelho" };
-}
+const DATA_EXTRACAO_PADRAO = DATA_REFERENCIA_PADRAO;
 
 function formatarDataBase(dataIso) {
   const [ano, mes, dia] = dataIso.split("-");
@@ -78,14 +57,6 @@ export default function DashboardHeader({ dashboard }) {
   const exportacaoDesabilitada =
     totalBeneficiarios === 0 || periodoInvalido || exportandoImagem;
 
-  const statusAtualizacao = calcularStatusAtualizacao(dataExtracaoBase);
-  const textoDias =
-    statusAtualizacao.dias === 0
-      ? "Atualizada hoje"
-      : `Atualizada há ${statusAtualizacao.dias} ${
-          statusAtualizacao.dias === 1 ? "dia" : "dias"
-        }`;
-
   return (
     <header className="cabecalho-dashboard">
       <div className="cabecalho-conteudo">
@@ -93,16 +64,16 @@ export default function DashboardHeader({ dashboard }) {
         <h1>Dashboard de Beneficiários · Vértice Saúde</h1>
 
         <div className="cabecalho-atualizacao" aria-label="Informações da base de dados">
-          <span className={`cabecalho-status cabecalho-status-${statusAtualizacao.nivel}`}>
+          <span className="cabecalho-status cabecalho-status-amarelo" title="Operadora, empresas e beneficiários fictícios, gerados para demonstração">
             <span className="cabecalho-status-ponto" aria-hidden="true" />
-            {textoDias}
+            Dados fictícios
           </span>
 
           <span className="cabecalho-atualizacao-divisor" aria-hidden="true" />
 
           <span className="cabecalho-data-base">
             <span aria-hidden="true">🗓️</span>
-            Extração da base: {formatarDataBase(dataExtracaoBase)}
+            Data de referência: {formatarDataBase(dataExtracaoBase)}
           </span>
         </div>
       </div>

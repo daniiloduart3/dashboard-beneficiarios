@@ -1,22 +1,8 @@
+import { faixaEtariaANS } from "./regrasNegocio";
+
+// Faixas etárias da ANS (regra única em utils/regrasNegocio.js)
 export function identificarFaixaEtaria(idadeTexto) {
-  const idade = Number(idadeTexto);
-
-  if (
-    idadeTexto === "" ||
-    !Number.isFinite(idade) ||
-    idade < 0 ||
-    idade > 120
-  ) {
-    return "Não informado";
-  }
-
-  if (idade <= 17) return "0 a 17";
-  if (idade <= 29) return "18 a 29";
-  if (idade <= 39) return "30 a 39";
-  if (idade <= 49) return "40 a 49";
-  if (idade <= 59) return "50 a 59";
-
-  return "60 ou mais";
+  return faixaEtariaANS(idadeTexto);
 }
 
 export function empresaValidaParaAnalise(empresaTexto) {

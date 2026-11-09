@@ -1,0 +1,224 @@
+// =====================================================================
+// Modelo e medidas DAX
+//
+// 1) Tabela calendário: Modelagem → Nova tabela → cole dCalendario
+// 2) Relacionamentos (Exibição de modelo):
+//      dCalendario[Data] 1 ──► * fBeneficiarios[DataInclusao]      (ATIVO)
+//      dCalendario[Data] 1 ┄┄► * fBeneficiarios[DataCancelamento]  (INATIVO)
+//    dPrazos fica SEM relacionamento.
+// 3) Crie uma tabela vazia "_Medidas" e cole cada medida abaixo nela.
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// Tabela calendário
+// ---------------------------------------------------------------------
+dCalendario =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2019, 1, 1 ), DATE ( 2026, 12, 31 ) ),
+    "Ano", YEAR ( [Date] ),
+    "MesNum", MONTH ( [Date] ),
+    "InicioMes", DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
+    "Mes", FORMAT ( [Date], "mmm/yy", "pt-BR" ),
+    "AnoMes", YEAR ( [Date] ) * 100 + MONTH ( [Date] )
+)
+// Depois de criar: renomeie a coluna [Date] para [Data],
+// marque como tabela de datas e classifique [Mes] por [AnoMes].
+
+
+// ---------------------------------------------------------------------
+// Parâmetro
+// ---------------------------------------------------------------------
+Data Referencia = DATE ( 2026, 8, 31 )
+
+
+// ---------------------------------------------------------------------
+// Carteira atual
+// ---------------------------------------------------------------------
+Vidas Ativas =
+CALCULATE (
+    COUNTROWS ( fBeneficiarios ),
+    fBeneficiarios[Situacao] = "ATIVO",
+    fBeneficiarios[DataInclusao] <= [Data Referencia],
+    REMOVEFILTERS ( dCalendario )
+)
+
+% PJ =
+DIVIDE (
+    CALCULATE ( [Vidas Ativas], fBeneficiarios[TipoCadastro] = "PJ" ),
+    [Vidas Ativas]
+)
+
+Idade Media =
+CALCULATE (
+    AVERAGE ( fBeneficiarios[Idade] ),
+    fBeneficiarios[Situacao] = "ATIVO",
+    fBeneficiarios[DataInclusao] <= [Data Referencia],
+    REMOVEFILTERS ( dCalendario )
+)
+
+% 59 ou mais =
+DIVIDE (
+    CALCULATE ( [Vidas Ativas], fBeneficiarios[FaixaANS] = "59 ou mais" ),
+    [Vidas Ativas]
+)
+
+
+// ---------------------------------------------------------------------
+// Movimentação mensal (use com dCalendario[Mes] no eixo)
+// ---------------------------------------------------------------------
+Entradas =
+CALCULATE ( COUNTROWS ( fBeneficiarios ), fBeneficiarios[BaseValida] = TRUE () )
+
+Entradas Brutas =
+COUNTROWS ( fBeneficiarios )
+
+Perdas =
+CALCULATE (
+    COUNTROWS ( fBeneficiarios ),
+    fBeneficiarios[Perda] = TRUE (),
+    USERELATIONSHIP ( dCalendario[Data], fBeneficiarios[DataCancelamento] )
+)
+
+Migracoes =
+CALCULATE (
+    COUNTROWS ( fBeneficiarios ),
+    fBeneficiarios[BaseValida] = TRUE (),
+    fBeneficiarios[Migracao] = TRUE (),
+    USERELATIONSHIP ( dCalendario[Data], fBeneficiarios[DataCancelamento] )
+)
+
+Saldo Liquido = [Entradas] - [Perdas] - [Migracoes]
+
+// Estoque reconstruído: válidos que entraram antes do 1º dia do mês
+// e não tinham saído até ele.
+Ativos Inicio do Mes =
+VAR InicioMes = MIN ( dCalendario[InicioMes] )
+RETURN
+    CALCULATE (
+        COUNTROWS ( fBeneficiarios ),
+        REMOVEFILTERS ( dCalendario ),
+        fBeneficiarios[BaseValida] = TRUE (),
+        fBeneficiarios[DataInclusao] < InicioMes,
+        FILTER (
+            ALL ( fBeneficiarios[DataCancelamento] ),
+            ISBLANK ( fBeneficiarios[DataCancelamento] )
+                || fBeneficiarios[DataCancelamento] >= InicioMes
+        )
+    )
+
+Churn % = DIVIDE ( [Perdas], [Ativos Inicio do Mes] )
+
+Churn % MM3 =
+VAR MesAtual = MAX ( dCalendario[InicioMes] )
+VAR Meses =
+    CALCULATETABLE (
+        VALUES ( dCalendario[InicioMes] ),
+        REMOVEFILTERS ( dCalendario ),
+        dCalendario[InicioMes] > EDATE ( MesAtual, -3 ),
+        dCalendario[InicioMes] <= MesAtual
+    )
+RETURN
+    AVERAGEX (
+        Meses,
+        VAR Mes = dCalendario[InicioMes]
+        RETURN CALCULATE ( [Churn %], REMOVEFILTERS ( dCalendario ), dCalendario[InicioMes] = Mes )
+    )
+
+// Alerta: churn acima de 2x a mediana dos 12 meses anteriores
+Churn Mediana 12m =
+VAR MesAtual = MAX ( dCalendario[InicioMes] )
+VAR Meses =
+    CALCULATETABLE (
+        VALUES ( dCalendario[InicioMes] ),
+        REMOVEFILTERS ( dCalendario ),
+        dCalendario[InicioMes] >= EDATE ( MesAtual, -12 ),
+        dCalendario[InicioMes] < MesAtual
+    )
+RETURN
+    MEDIANX (
+        Meses,
+        VAR Mes = dCalendario[InicioMes]
+        RETURN CALCULATE ( [Churn %], REMOVEFILTERS ( dCalendario ), dCalendario[InicioMes] = Mes )
+    )
+
+Alerta Churn =
+IF ( [Churn %] > 2 * [Churn Mediana 12m], "▲ Alerta", BLANK () )
+
+Perdas Excedentes =
+IF (
+    NOT ISBLANK ( [Alerta Churn] ),
+    [Perdas] - ROUND ( [Ativos Inicio do Mes] * [Churn Mediana 12m], 0 )
+)
+
+
+// ---------------------------------------------------------------------
+// Retenção por safra
+// Matriz: Linhas = fBeneficiarios[Safra] · Colunas = dPrazos[Rotulo]
+//         (classifique dPrazos[Rotulo] por dPrazos[Meses])
+// ---------------------------------------------------------------------
+Retencao % =
+VAR Prazo = SELECTEDVALUE ( dPrazos[Meses] )
+VAR Ref = [Data Referencia]
+VAR Elegiveis =
+    FILTER (
+        CALCULATETABLE (
+            fBeneficiarios,
+            fBeneficiarios[BaseValida] = TRUE (),
+            fBeneficiarios[Migracao] = FALSE ()
+        ),
+        EDATE ( fBeneficiarios[DataInclusao], Prazo ) <= Ref
+    )
+VAR Retidas =
+    FILTER (
+        Elegiveis,
+        ISBLANK ( fBeneficiarios[DataCancelamento] )
+            || fBeneficiarios[DataCancelamento] >= EDATE ( fBeneficiarios[DataInclusao], Prazo )
+    )
+RETURN
+    IF ( NOT ISBLANK ( Prazo ), DIVIDE ( COUNTROWS ( Retidas ), COUNTROWS ( Elegiveis ) ) )
+
+
+// ---------------------------------------------------------------------
+// Permanência e motivos
+// ---------------------------------------------------------------------
+Permanencia Mediana (meses) =
+CALCULATE (
+    MEDIAN ( fBeneficiarios[MesesPermanencia] ),
+    fBeneficiarios[Perda] = TRUE ()
+)
+
+% Sai Antes de 3 Meses =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( fBeneficiarios ), fBeneficiarios[Perda] = TRUE (), fBeneficiarios[MesesPermanencia] < 3 ),
+    CALCULATE ( COUNTROWS ( fBeneficiarios ), fBeneficiarios[Perda] = TRUE () )
+)
+
+
+// ---------------------------------------------------------------------
+// Concentração PJ (use em tabela com fBeneficiarios[Empresa])
+// ---------------------------------------------------------------------
+% da Carteira PJ =
+DIVIDE (
+    CALCULATE ( [Vidas Ativas], fBeneficiarios[TipoCadastro] = "PJ" ),
+    CALCULATE ( [Vidas Ativas], fBeneficiarios[TipoCadastro] = "PJ", REMOVEFILTERS ( fBeneficiarios[Empresa] ) )
+)
+
+Ranking Empresa =
+IF (
+    HASONEVALUE ( fBeneficiarios[Empresa] ),
+    RANKX (
+        CALCULATETABLE ( VALUES ( fBeneficiarios[Empresa] ), REMOVEFILTERS ( fBeneficiarios[Empresa] ), fBeneficiarios[TipoCadastro] = "PJ" ),
+        [Vidas Ativas], , DESC
+    )
+)
+
+
+// ---------------------------------------------------------------------
+// Qualidade dos dados
+// ---------------------------------------------------------------------
+% Fora da Base Valida =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( fBeneficiarios ), fBeneficiarios[BaseValida] = FALSE () ),
+    COUNTROWS ( fBeneficiarios )
+)
